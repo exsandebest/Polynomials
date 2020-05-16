@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Polynomials</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="src.qrc">
+    <normaloff>:/img/icon.ico</normaloff>:/img/icon.ico</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QListWidget" name="dbListWidget">
@@ -311,9 +315,9 @@
     <property name="geometry">
      <rect>
       <x>270</x>
-      <y>120</y>
+      <y>100</y>
       <width>761</width>
-      <height>231</height>
+      <height>251</height>
      </rect>
     </property>
     <property name="title">
@@ -323,7 +327,7 @@
      <property name="geometry">
       <rect>
        <x>50</x>
-       <y>110</y>
+       <y>130</y>
        <width>71</width>
        <height>41</height>
       </rect>
@@ -342,7 +346,7 @@
      <property name="geometry">
       <rect>
        <x>80</x>
-       <y>80</y>
+       <y>100</y>
        <width>41</width>
        <height>23</height>
       </rect>
@@ -355,7 +359,7 @@
      <property name="geometry">
       <rect>
        <x>160</x>
-       <y>100</y>
+       <y>120</y>
        <width>81</width>
        <height>51</height>
       </rect>
@@ -377,7 +381,7 @@
      <property name="geometry">
       <rect>
        <x>280</x>
-       <y>40</y>
+       <y>60</y>
        <width>461</width>
        <height>161</height>
       </rect>
@@ -396,7 +400,7 @@
      <property name="geometry">
       <rect>
        <x>160</x>
-       <y>170</y>
+       <y>190</y>
        <width>75</width>
        <height>23</height>
       </rect>
@@ -409,7 +413,7 @@
      <property name="geometry">
       <rect>
        <x>700</x>
-       <y>10</y>
+       <y>30</y>
        <width>41</width>
        <height>23</height>
       </rect>
@@ -435,7 +439,7 @@
      <property name="geometry">
       <rect>
        <x>570</x>
-       <y>20</y>
+       <y>30</y>
        <width>41</width>
        <height>23</height>
       </rect>
@@ -448,7 +452,7 @@
      <property name="geometry">
       <rect>
        <x>12</x>
-       <y>49</y>
+       <y>59</y>
        <width>601</width>
        <height>41</height>
       </rect>
@@ -464,7 +468,7 @@
      <property name="geometry">
       <rect>
        <x>620</x>
-       <y>50</y>
+       <y>60</y>
        <width>171</width>
        <height>41</height>
       </rect>
@@ -475,27 +479,10 @@
     </widget>
    </widget>
   </widget>
-  <widget class="QMenuBar" name="menuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1920</width>
-     <height>21</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QToolBar" name="mainToolBar">
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
-  <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="src.qrc"/>
+ </resources>
  <connections/>
 </ui>

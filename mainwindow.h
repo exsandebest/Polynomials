@@ -3,7 +3,6 @@
 
 #include <QMainWindow>
 #include <QListWidget>
-#include <QListWidgetItem>
 
 
 struct pair{
@@ -67,6 +66,7 @@ public:
     void setSavabilityPolynom(bool t);
     Polynom * complex(Polynom * pol);
     bool checkNull(Polynom * pol);
+
 private slots:
     void on_btnAddPolynom_clicked();
 

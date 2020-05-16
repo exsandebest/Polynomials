@@ -1,13 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QGridLayout>
-#include <QPushButton>
-#include <QLabel>
 #include <QListWidget>
-#include <QMap>
-#include <QDebug>
 #include <QMessageBox>
-#include <QObject>
 
 QString degrees = "⁰¹²³⁴⁵⁶⁷⁸⁹";
 
@@ -26,28 +20,28 @@ QString MainWindow::getPolynomString(Polynom *pol){
     Polynom * tmp = pol;
     while (tmp!=nullptr){
         if(tmp == pol){
-        if (tmp->k == 0){
+            if (tmp->k == 0){
+                tmp = tmp->next;
+                continue;
+            }
+            QString s1 = "";
+            if(tmp->k==-1 && tmp->n != 0){
+                s1="-";
+            } else if(tmp->k ==-1 && tmp->n == 0){
+                s1="-1";
+            } else if (tmp->k == 1 && tmp->n == 0){
+                s1 = "1";
+            } else if(tmp->k == 1 && tmp->n != 0){
+                s1 = "";
+            } else {
+                s1.setNum(tmp->k);
+            }
+            ans+=s1;
+            if (tmp->n != 0){
+                ans+="x";
+            }
+            ans+=getDegree(tmp->n);
             tmp = tmp->next;
-            continue;
-        }
-        QString s1 = "";
-        if(tmp->k==-1 && tmp->n != 0){
-            s1="-";
-        } else if(tmp->k ==-1 && tmp->n == 0){
-            s1="-1";
-        } else if (tmp->k == 1 && tmp->n == 0){
-            s1 = "1";
-        } else if(tmp->k == 1 && tmp->n != 0){
-            s1 = "";
-        } else {
-            s1.setNum(tmp->k);
-        }
-        ans+=s1;
-        if (tmp->n != 0){
-            ans+="x";
-        }
-        ans+=getDegree(tmp->n);
-        tmp = tmp->next;
         } else {
             if (tmp->k == 0){
                 tmp = tmp->next;
@@ -117,13 +111,12 @@ void MainWindow::updateDb(){
     int t = 1;
     while (tmp!=nullptr){
         QString sPolynom = getPolynomString(tmp->polynom);
-        QString s1;
-        s1.setNum(t++);
         QListWidgetItem * item = new QListWidgetItem();
-        item->setText(s1 + ". "+sPolynom);
-        item->setToolTip(s1);
+        item->setText(QString::number(t) + ". "+sPolynom);
+        item->setToolTip(QString::number(t));
         ui->dbListWidget->addItem(item);
         tmp=tmp->next;
+        ++t;
     }
 }
 
@@ -165,7 +158,7 @@ QString MainWindow::getDegree(int n){
     }
     for (int i = 0; i < tmp.length(); ++i){
         int g = QString(tmp[i]).toInt();
-            ans+=degrees[g];
+        ans+=degrees[g];
     }
 
     return ans;
@@ -189,7 +182,7 @@ pair MainWindow::getK(QString &s, int i){
         return pr;
     }
     if(tmp[0] == '0' && tmp.length()>1){
-        QMessageBox::about(this, "Think about it", "Мы, конечно, не запрещаем вам использовать ведущие нули, но давайте будем обходиться без них :)");
+        QMessageBox::about(this, "Think about it", "Let's don't use leading zeros");
     }
     pair pr;
     pr.val = tmp.toDouble()*tmpK;
@@ -227,10 +220,9 @@ void MainWindow::onDblClicked(QListWidgetItem * item){
 
 pair MainWindow::getN(QString &s, int i){
     QString tmp = "";
-    if (QString(s[i])+QString(s[i+1]) == "+-") throw QString("Степень может быть только неотрицательным числом");
-    if (i>s.length()-1 || s[i]=='+') throw QString("Введите степень переменной");
-    if (s[i] == 'x') throw QString("Степень должна быть неотрицательным числом");
-    if (s[i] == '^') throw QString("Введите степень переменной\nТы хотел сделать смайлик ^^ ?)");
+    if (QString(s[i])+QString(s[i+1]) == "+-") throw QString("Degree must be non negative");
+    if (i>s.length()-1 || s[i]=='+' || s[i] == '^') throw QString("Enter degree");
+    if (s[i] == 'x') throw QString("Degree must be non negative number");
     while (s[i]>='0' && s[i] <='9'){
         tmp+=s[i];
         ++i;
@@ -289,32 +281,32 @@ polTrip MainWindow::sort(Polynom *pol, int len){
     int bd = 0, sd =0, md = 0;
     for(int i = 0; i < len; ++i){
         if (g->n>x){
-                  if (bd != 0){
-                      big->next = g;
-                      big = big->next;
-                      ++bd;
-                    } else {
-                      bigStart = big = g;
-                               ++bd;
-                    }
+            if (bd != 0){
+                big->next = g;
+                big = big->next;
+                ++bd;
+            } else {
+                bigStart = big = g;
+                ++bd;
+            }
         } else if(g->n == x){
             if (md!=0){
-                        middle->next = g;
-                        middle = middle->next;
-                        ++md;
-                        } else {
-                            middleStart = middle = g;
-                            ++md;
-                        }
+                middle->next = g;
+                middle = middle->next;
+                ++md;
+            } else {
+                middleStart = middle = g;
+                ++md;
+            }
         } else {
             if (sd!=0){
-                        small->next = g;
-                        small = small->next;
-                        ++sd;
-                        } else {
-                            smallStart = small = g;
-                            ++sd;
-                        }
+                small->next = g;
+                small = small->next;
+                ++sd;
+            } else {
+                smallStart = small = g;
+                ++sd;
+            }
         }
         g = g->next;
     }
@@ -451,7 +443,7 @@ bool MainWindow::parseInput(Polynom * pol, QString &s, int i){
     int tmpK = tmpPair.val;
     pol->k = tmpK;
     i = tmpPair.i;
-    if (i > s.length()) throw QString("Ожидался одночлен");
+    if (i > s.length()) throw QString("Expected monomial");
     if (s[i] == 'x'){
         ++i;
         if(s[i] == '^'){
@@ -463,18 +455,18 @@ bool MainWindow::parseInput(Polynom * pol, QString &s, int i){
             pol->n = 1;
         }
     } else {
-        if (s[i] == '^') throw QString("В степень может быть возведена только переменная");
+        if (s[i] == '^') throw QString("Exponentiation can be applied only to variable");
         pol->n = 0;
     }
     if (s[i] == '+'){
         pol->next = new Polynom;
         parseInput(pol->next,s,i+1);
     } else if(s[i] == "x"){
-       throw QString("Некорректный ввод: xxx...");    
+        throw QString("Incorrect input: xxx...");
     } else if (s[i] == '^'){
-        throw QString("Нельзя возводить показатель степени в степень");
+        throw QString("Exponentiation can be applied only to variable");
     } else if (s[i]>='0' && s[i] <='9'){
-        throw QString("Что за цифры после x?\nВы забыли значок степени?");
+        throw QString("Incorrect input\nDid you forget '^'?");
     }else{
         pol->next = nullptr;
     }
@@ -484,7 +476,6 @@ bool MainWindow::parseInput(Polynom * pol, QString &s, int i){
 
 
 Polynom * MainWindow::Plus(Polynom *pol1, Polynom *pol2){
-    Polynom * p1=pol1, *p2=pol2;
     Polynom *ans = new Polynom, * ansStart = ans, * tmp = pol1;
     while (tmp!=nullptr){
         Polynom * tmptmp = new Polynom;
@@ -547,46 +538,48 @@ void MainWindow::setSavabilityPolynom(bool t){
 
 
 void MainWindow::on_btnAddPolynom_clicked(){
-     try {
-    QString str = ui->inputPolynom->text();
-    for (int i = 0; i < str.length(); ++i){
-        if(str[i] == " ") throw QString("Пробелы запрещены");
-    }
-    if (str == "") throw QString("Введите многочлен");
-    for (int i = 0; i < str.length()-1; ++i){
-        if(QString(str[i]) + QString(str[i+1]) == "+-" ||QString(str[i]) + QString(str[i+1]) == "-+"){
-            throw QString("Ожидался одночлен");
+    try {
+        QString str = ui->inputPolynom->text();
+        for (int i = 0; i < str.length(); ++i){
+            if(str[i] == " ") throw QString("Spaces are not allowed");
         }
-    }
+        if (str == "") throw QString("");
+        for (int i = 0; i < str.length()-1; ++i){
+            if(QString(str[i]) + QString(str[i+1]) == "+-" ||QString(str[i]) + QString(str[i+1]) == "-+"){
+                throw QString("Expected monomial");
+            }
+        }
 
-    if (str[0] == "+" || str == "-" || QRegExp(".*[-]{2,}.*").exactMatch(str) || QRegExp(".*[+]{2,}.*").exactMatch(str) || str[str.length()-1] == "-" || str[str.length()-1]=="+") throw QString("Ожидался одночлен");
-    str = str.replace(QRegExp("-"),"+-");
-    if (str[0] == '+') str[0] = ' ';
-    str = str.replace(QRegExp(" "),"");
+        if (str[0] == "+" || str == "-" || QRegExp(".*[-]{2,}.*").exactMatch(str) ||
+                QRegExp(".*[+]{2,}.*").exactMatch(str) || str[str.length()-1] == "-" ||
+                str[str.length()-1]=="+") throw QString("Expected monomial");
+        str = str.replace(QRegExp("-"),"+-");
+        if (str[0] == '+') str[0] = ' ';
+        str = str.replace(QRegExp(" "),"");
 
-    Polynom * pol = new Polynom;
-    QString tmps;
-    tmps.setNum(str.toInt());
-    if (str == tmps){
-        if(str[0] == '0' && str.length()>1 && str.toInt() != 0 ){
-            QMessageBox::about(this, "Think about it", "Мы, конечно, не запрещаем вам использовать ведущие нули, но давайте будем обходиться без них :)");
+        Polynom * pol = new Polynom;
+        QString tmps;
+        tmps.setNum(str.toInt());
+        if (str == tmps){
+            if(str[0] == '0' && str.length()>1 && str.toInt() != 0 ){
+                QMessageBox::about(this, "Think about it", "Let's don't use leading zeros");
+            }
+            pol->k = str.toInt();
+            if (pol->k == 0){
+                throw QString("Let's don't add 0");
+            }
+            pol->n = 0;
+            pol->next = nullptr;
+            addPolynomToDb(pol);
+            updateDb();
+            ui->inputPolynom->clear();
+            return;
         }
-        pol->k = str.toInt();
-        if (pol->k == 0){
-            throw QString("Ноль в вашей жизни ничего не изменит, так что давайте не будем его добавлять");
-        }
-        pol->n = 0;
-        pol->next = nullptr;
-        addPolynomToDb(pol);
-        updateDb();
-        ui->inputPolynom->clear();
-        return;
-    }
-        if(!QRegExp("[0123456789x+-\\s^]+").exactMatch(str)) throw QString("Обнаружены недопустимые символы");
+        if(!QRegExp("[0123456789x+-\\s^]+").exactMatch(str)) throw QString("Incorrect symbols");
         parseInput(pol,str,0);
         pol = complex(pol);
         if(pol->k == 0){
-            throw QString("Ваш многочлен сократился");
+            throw QString("Polynomial has shrunk");
         }
         addPolynomToDb(pol);
         updateDb();
@@ -631,7 +624,7 @@ polPair MainWindow::Division(Polynom *pol1, Polynom *pol2){
         if (tmpN <0){
             polPair tmpPair;
             if (ln == 0){
-            tmpPair.a = nullptr;
+                tmpPair.a = nullptr;
             } else {
                 tmpPair.a = ansStart->next;
             }
@@ -687,132 +680,121 @@ double MainWindow::Point(Polynom * pol, double x){
 void MainWindow::on_btnGetResult_clicked()
 {
     try{
-    QString str1 = ui->inputField1->text();
-    QString str2 = ui->inputField2->text();
-    if (str1 == "" || str2 == ""){
-        throw QString("Заполнены не все поля");
-    }
-    if (!QRegExp("[0123456789]+").exactMatch(str1)){
-        throw QString("Недопустимые символы в поле 1");
-    }
-    if (!QRegExp("[0123456789]+").exactMatch(str2) && !ui->rbtnPoint->isChecked()){
-        throw QString("Недопустимые символы в поле 2");
-    }
-    if (ui->rbtnPoint->isChecked() && !QRegExp("[0123456789.]+").exactMatch(str2)){
-        throw QString("Недопустимые символы в поле 2");
-    }
-    if (ui->rbtnDerivative->isChecked()){
+        QString str1 = ui->inputField1->text();
+        QString str2 = ui->inputField2->text();
+        if (str1 == "" || str2 == ""){
+            throw QString("Please, fill all fields");
+        }
+        if (!QRegExp("[0123456789]+").exactMatch(str1)){
+            throw QString("Incorrect symbols in field 1");
+        }
+        if (!QRegExp("[0123456789]+").exactMatch(str2) && !ui->rbtnPoint->isChecked()){
+            throw QString("Incorrect symbols in field 2");
+        }
+        if (ui->rbtnPoint->isChecked() && !QRegExp("[0123456789.]+").exactMatch(str2)){
+            throw QString("Incorrect symbols in field 2");
+        }
+        if (ui->rbtnDerivative->isChecked()){
+            int t1 = str1.toInt();
+            int t2 = str2.toInt();
+            if (t1 > dbLen || t1<=0){
+                throw QString("Polynomial with number " + QString::number(t1) + " does not exist");
+            }
+            if (t2 < 0){
+                throw QString("Condition: n ≥ 0");
+            }
+            MainList * tmp = db;
+            for (int i = 0; i < t1-1; ++i){
+                tmp = tmp->next;
+            }
+            Polynom * p = tmp->polynom;
+            for (int i = 0; i < t2; ++i){
+                p = Derivative(p);
+            }
+            p = complex(p);
+            tmpResultPolynom = p;
+            if (p->k != 0){
+                ui->outputResult->setText(getPolynomString(p));
+                setSavabilityPolynom(true);
+            } else {
+                ui->outputResult->setText("0");
+                setSavabilityPolynom(false);
+            }
+            return;
+        } else if (ui->rbtnPoint->isChecked()){
+            int t1 = str1.toInt();
+            double t2 = str2.toDouble();
+            if (t1 > dbLen || t1 <= 0){
+                throw QString("Polynomial with number " + QString::number(t1) + " does not exist");
+            }
+            MainList * tmp = db;
+            for (int i = 0; i < t1-1; ++i){
+                tmp = tmp->next;
+            }
+            Polynom * pol = tmp->polynom;
+            double res = Point(pol,t2);
+            ui->outputResult->setText(QString::number(res));
+            setSavabilityPolynom(false);
+            return;
+        }
+
         int t1 = str1.toInt();
         int t2 = str2.toInt();
         if (t1 > dbLen || t1<=0){
-            QString s1;
-            s1.setNum(t1);
-            throw QString("Полинома под номером "+s1+" не существует");
+            throw QString("Polynomial with number " + QString::number(t1) + " does not exist");
+        } else if (t2 > dbLen || t2 <= 0){
+            throw QString("Polynomial with number " + QString::number(t2) + " does not exist");
         }
-        if (t2 < 0){
-            throw QString("При взятии производной n должно быть ≥ 0");
-        }
+        Polynom * pol1, * pol2;
         MainList * tmp = db;
         for (int i = 0; i < t1-1; ++i){
             tmp = tmp->next;
         }
-        Polynom * p = tmp->polynom;
-        for (int i = 0; i < t2; ++i){
-            p = Derivative(p);
+        pol1 = tmp->polynom;
+        tmp = db;
+        for (int i = 0; i < t2-1; ++i){
+            tmp = tmp->next;
         }
-        p = complex(p);
-        tmpResultPolynom = p;
-        if (p->k != 0){
-            ui->outputResult->setText(getPolynomString(p));
+        pol2 = tmp->polynom;
+        Polynom * ans = nullptr;
+        if(ui->rbtnPlus->isChecked()){
+            ans = Plus(pol1, pol2);
+        } else if (ui->rbtnMinus->isChecked()){
+            ans = Minus(pol1,pol2);
+        } else if (ui->rbtnMultiply->isChecked()){
+            ans = Multiply(pol1, pol2);
+        } else if(ui->rbtnDivision->isChecked()){
+            polPair tmpPair = Division(pol1,pol2);
+            tmpResultPolynom = tmpPair.a;
+            tmpResultPolynom2 = tmpPair.b;
+            QString text =getPolynomString(tmpPair.a);
+            if (tmpPair.b != nullptr){
+                text+="(ост."+getPolynomString(tmpPair.b)+")";
+            }
+            ui->outputResult->setText(text);
+            setSavabilityPolynom(true);
+            return;
+        } else if (ui->rbtnEqual->isChecked()){
+            bool ansBool = Equal(pol1, pol2);
+            if (ansBool){
+                ui->outputResult->setText("TRUE");
+            } else {
+                ui->outputResult->setText("FALSE");
+            }
+            setSavabilityPolynom(false);
+            return;
+        }
+        ans = complex(ans);
+        tmpResultPolynom = ans;
+        if(ans->k != 0){
+            ui->outputResult->setText(getPolynomString(ans));
             setSavabilityPolynom(true);
         } else {
             ui->outputResult->setText("0");
             setSavabilityPolynom(false);
         }
-        return;
-    } else if (ui->rbtnPoint->isChecked()){
-        int t1 = str1.toInt();
-        double t2 = str2.toDouble();
-        if (t1 > dbLen || t1 <= 0){
-            QString s1;
-            s1.setNum(t1);
-            throw QString("Полинома под номером "+s1+" не существует");
-        }
-        MainList * tmp = db;
-        for (int i = 0; i < t1-1; ++i){
-            tmp = tmp->next;
-        }
-        Polynom * pol = tmp->polynom;
-        double res = Point(pol,t2);
-        QString s1;
-        s1.setNum(res);
-        ui->outputResult->setText(s1);
-        setSavabilityPolynom(false);
-        return;
-    }
-
-    int t1 = str1.toInt();
-    int t2 = str2.toInt();
-    if (t1 > dbLen || t1<=0){
-        QString s1;
-        s1.setNum(t1);
-        throw QString("Полинома под номером "+s1+" не существует");
-    } else if (t2 > dbLen || t2 <= 0){
-        QString s1;
-        s1.setNum(t2);
-        throw QString("Полинома под номером "+s1+" не существует");
-    }
-    Polynom * pol1, * pol2;
-    MainList * tmp = db;
-    for (int i = 0; i < t1-1; ++i){
-        tmp = tmp->next;
-    }
-    pol1 = tmp->polynom;
-    tmp = db;
-    for (int i = 0; i < t2-1; ++i){
-        tmp = tmp->next;
-    }
-    pol2 = tmp->polynom;
-    Polynom * ans = nullptr;
-    if(ui->rbtnPlus->isChecked()){
-        ans = Plus(pol1, pol2);
-    } else if (ui->rbtnMinus->isChecked()){
-        ans = Minus(pol1,pol2);
-    } else if (ui->rbtnMultiply->isChecked()){
-        ans = Multiply(pol1, pol2);
-    } else if(ui->rbtnDivision->isChecked()){
-        polPair tmpPair = Division(pol1,pol2);
-        tmpResultPolynom = tmpPair.a;
-        tmpResultPolynom2 = tmpPair.b;
-        QString text =getPolynomString(tmpPair.a);
-        if (tmpPair.b != nullptr){
-            text+="(ост."+getPolynomString(tmpPair.b)+")";
-        }
-        ui->outputResult->setText(text);
-        setSavabilityPolynom(true);
-        return;
-    } else if (ui->rbtnEqual->isChecked()){
-        bool ansBool = Equal(pol1, pol2);
-        if (ansBool){
-            ui->outputResult->setText("TRUE");
-        } else {
-            ui->outputResult->setText("FALSE");
-        }
-        setSavabilityPolynom(false);
-        return;
-    }
-    ans = complex(ans);
-    tmpResultPolynom = ans;
-
-    if(ans->k != 0){
-        ui->outputResult->setText(getPolynomString(ans));
-        setSavabilityPolynom(true);
-    } else {
-        ui->outputResult->setText("0");
-        setSavabilityPolynom(false);
-    }
     } catch(QString str){
-         QMessageBox::warning(this, "Warning", str);
+        QMessageBox::warning(this, "Warning", str);
     }
 }
 
@@ -907,43 +889,36 @@ void MainWindow::on_bntClearInputField3_clicked()
 void MainWindow::on_btnFindRoots_clicked()
 {
     try {
-    QString str = ui->inputField3->text().replace(" ","");
-    if (str == ""){
-        throw QString("Введите номер полинома");
-    }
-    if (!QRegExp("[0123456789]+").exactMatch(str)){
-        throw QString("Введены недопустимые символы");
-    }
-    int t1 = str.toInt();
-    if (t1 > dbLen || t1<=0){
-        QString s1;
-        s1.setNum(t1);
-        throw QString("Полинома под номером "+s1+" не существует");
-    }
-    MainList * tmpMainList = db;
-    for (int i = 0; i < t1-1; ++i){
-        tmpMainList = tmpMainList->next;
-    }
-    Polynom * pol = tmpMainList->polynom;
-    QString ans = "";
-    for (int i = -1000000; i <1000000; ++i){
-        if (Point(pol,i) == 0){
-            QString s1;
-            s1.setNum(i);
-            ans+=s1+"\n";
+        QString str = ui->inputField3->text().replace(" ","");
+        if (str == ""){
+            throw QString("Enter the polynomial number");
         }
-    }
-    if (ans == ""){
-        ui->outputResult2->setText("Нет целочисленных корней");
-    } else {
-       ui->outputResult2->setText(ans);
-    }
-
-
+        if (!QRegExp("[0123456789]+").exactMatch(str)){
+            throw QString("Incorrect symbols");
+        }
+        int t1 = str.toInt();
+        if (t1 > dbLen || t1<=0){
+            throw QString("Polynomial with number " + QString::number(t1) + " does not exist");
+        }
+        MainList * tmpMainList = db;
+        for (int i = 0; i < t1-1; ++i){
+            tmpMainList = tmpMainList->next;
+        }
+        Polynom * pol = tmpMainList->polynom;
+        QString ans = "";
+        for (int i = -1000000; i <1000000; ++i){
+            if (Point(pol,i) == 0){
+                ans+=QString::number(i)+"\n";
+            }
+        }
+        if (ans == ""){
+            ui->outputResult2->setText("No integer roots");
+        } else {
+            ui->outputResult2->setText(ans);
+        }
     } catch(QString str){
-         QMessageBox::warning(this, "Warning", str);
+        QMessageBox::warning(this, "Warning", str);
     }
-
 }
 
 void MainWindow::on_bntClearOutputField2_clicked()
